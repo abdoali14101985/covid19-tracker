@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+  <head>
+    <title>Covid 19 Tracker</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="autogenerateindex.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <link href="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.css" rel="stylesheet">
+	<script src="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.js"></script>
+    <script type="text/javascript" th:inline="javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+    	var jsondata =JSON.parse([[${jsonStr}]]);
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Dates');
+        data.addColumn('number', 'Cases');
+        for (var key in jsondata){
+        	var cases=jsondata[key];
+        	var dateparts=key.split('-')
+        	var year='20'.concat(dateparts[2]);
+        	//console.log(dateparts[0]+" : "+dateparts[1]+" : "+year);
+        	var date = new Date(year,dateparts[0]-1,dateparts[1]);
+        	//console.log(date.toDateString());
+        	data.addRows([
+        		[date,parseInt(cases)]
+        		]);
+        }
+        
+        var options = {
+          title: 'Global Covid19 Cases Timeline',
+          colors: ['Red'],
+          chartArea: {
+          backgroundColor: 'Grey'
+          },
+          hAxis: {
+              format: 'M/d/yy'
+            },
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+
+  <body>
+ 	<div class="container">
+    	<h1 class="text-center display-4 mb-3">Covid 19 Tracker Application</h1>
+    	<h6 class="text-center mb-3" th:text="|Covid-19 Cases Data as of ${reportDate}|"></h6>
+    	<hr/>
+    		<div class="container">
+  			<div class="row">
+  				<div class="col-sm-3">
+	    		<div class="card text-white bg-warning mb-3">
+      			<div class="card-body">
+        			<h5 class="card-title">Total Confirmed Cases</h5>
+        			<p class="card-text" th:text="${totalConfirmedCases}"></p>
+        			<p class="card-text text-right small" th:text="${totalConfirmedChange} ge 0? |+${totalConfirmedChange}| : ${totalConfirmedChange}"></p>
+      			</div>
+    		</div>
+  		</div>
+  		<div class="col-sm-3">
+    		<div class="card text-white bg-success mb-3">
+      			<div class="card-body">
+        			<h5 class="card-title">Total Recovered Cases</h5>
+        			<p class="card-text" th:text="${totalRecoveredCases}"></p>
+        			<p class="card-text text-right small" th:text="${totalRecoveredChange} ge 0? |+${totalRecoveredChange}| : ${totalRecoveredChange}"></p>
+      			</div>
+    		</div>
+  		</div>
+  		<div class="col-sm-3">
+    		<div class="card text-white bg-dark mb-3">
+      			<div class="card-body">
+        			<h5 class="card-title">Total Deaths</h5>
+        			<p class="card-text" th:text="${totalDeaths}"></p>
+        			<p class="card-text text-right small" th:text="${totalDeathChange} ge 0? |+${totalDeathChange}| : ${totalDeathChange}"></p>
+      			</div>
+    		</div>
+  		</div>
+  		<div class="col-sm-3">
+    		<div class="card text-white bg-danger mb-3">
+      			<div class="card-body">
+        			<h5 class="card-title">Total Active Cases</h5>
+        			<p class="card-text" th:text="${totalActiveCases}"></p>
+        			<p class="card-text text-right small" th:text="${totalActiveChange} ge 0? |+${totalActiveChange}| : ${totalActiveChange}"></p>
+      			</div>
+    		</div>
+  		</div>
+	</div>
+	</div>
+	<div class="container mb-3">
+		<p><small><mark>
+		This data is collected from 2019 Novel Coronavirus COVID-19 (2019-nCoV) Data Repository by Johns Hopkins CSSE
+		</mark></small></p>
+
+		
+	</div>
+	<div id="curve_chart" style="width: 1200px; height: 500px"></div>
+	<div class="container">
+		<!--  <input class="form-control mb-3" id="searchcountry" type="text" placeholder="Search Country" style="width: 200px">-->
+	    <table id="table" class="table table-bordered" 
+	    data-toggle="table"
+	    data-search="true"
+  		data-height="500"
+	    data-pagination="true">
+    		<thead class="thead-dark" >
+      			<tr>
+      				<th>S.NO</th>
+        			<th>COUNTRY</th>
+        			<th>CONFIRMED CASES</th>
+        			<th>RECOVERED CASES</th>
+        			<th>TOTAL DEATHS</th>
+        			<th>ACTIVE CASES</th>
+      			</tr>
+    		</thead>
+    		<tbody id="covid19table">
+      			<tr th:each="covid19cases : ${covid19CasesList}">
+      				<td class="bg-info text-white"></td>
+        			<th class="bg-info text-white" scope="row" th:text="${covid19cases.country}"></th>
+        			<td class="bg-warning text-white">
+        				<span th:text="${covid19cases.confirmedCases}"></span>
+        				<span class="small text-right" th:text= "${covid19cases.confirmedCasesChange} ge 0? |+${covid19cases.confirmedCasesChange}| : ${covid19cases.confirmedCasesChange}"></span>
+        			</td>
+        			<td class="bg-success text-white">
+        				<span th:text="${covid19cases.recoveredCases}"></span>
+        				<span class="small text-right" th:text= "${covid19cases.recoveredCasesChange} ge 0? |+${covid19cases.recoveredCasesChange}| : ${covid19cases.recoveredCasesChange}"></span>
+        			</td>
+        			<td class="bg-dark text-white">
+        				<span th:text="${covid19cases.confirmedDeaths}"></span>
+        				<span class="small text-right" th:text= "${covid19cases.confirmedDeathsChange} ge 0? |+${covid19cases.confirmedDeathsChange}| : ${covid19cases.confirmedDeathsChange}"></span>
+        			</td>
+        			<td class="bg-danger text-white">
+        				<span th:text="${covid19cases.activeCases}"></span>
+        				<span class="small text-right" th:text= "${covid19cases.activeCasesChange} ge 0? |+${covid19cases.activeCasesChange}| : ${covid19cases.activeCasesChange}"></span>
+        			</td>
+      			</tr>
+      		</tbody>
+    	</table>
+    </div>
+    <hr/>
+    <footer class="footer  text-right small">
+    	<div class="container">
+    		<span class="text-muted">Tracker created by Abdo Ali (abdoali.14101985@gmail.com)</span>
+    	</div>
+    </footer>
+  </body>
+
+</html>
